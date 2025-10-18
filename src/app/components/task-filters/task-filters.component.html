@@ -1,0 +1,23 @@
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold">Nazwa zdarzenia</label>
+        <input type="text" class="form-control" [(ngModel)]="filters.name" (input)="updateFilters()" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold">Data</label>
+        <input type="date" class="form-control" [(ngModel)]="filters.date" (change)="updateFilters()" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold">Status</label>
+        <select class="form-select" [(ngModel)]="filters.status" (change)="updateFilters()">
+          <option value="">Wszystkie</option>
+          <option value="Pending">Oczekujące</option>
+          <option value="Planned">Zaplanowane</option>
+          <option value="Completed">Ukończone</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

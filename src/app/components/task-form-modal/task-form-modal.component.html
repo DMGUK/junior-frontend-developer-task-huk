@@ -1,0 +1,51 @@
+<div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title">Dodaj nowe zadanie</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="cancel.emit()"></button>
+      </div>
+
+      <form [formGroup]="newTaskForm" (ngSubmit)="saveTask()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nazwa zadania *</label>
+            <input type="text" class="form-control" formControlName="name" />
+            @if (newTaskForm.get('name')?.touched && newTaskForm.get('name')?.invalid) {
+              <div class="text-danger small mt-1">Nazwa jest wymagana.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Data *</label>
+            <input type="date" class="form-control" formControlName="date" />
+            @if (newTaskForm.get('date')?.touched && newTaskForm.get('date')?.errors?.['required']) {
+              <div class="text-danger small mt-1">Data jest wymagana.</div>
+            } @else if (newTaskForm.get('date')?.errors?.['pastDate']) {
+              <div class="text-danger small mt-1">Data nie może być z przeszłości.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" formControlName="status">
+              <option value="Pending">Oczekujące</option>
+              <option value="Planned">Zaplanowane</option>
+              <option value="Completed">Ukończone</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Opis</label>
+            <textarea class="form-control" rows="3" formControlName="description"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancel.emit()">Anuluj</button>
+          <button type="submit" class="btn btn-primary" [disabled]="newTaskForm.invalid">Zapisz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

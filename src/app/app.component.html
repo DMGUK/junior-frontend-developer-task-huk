@@ -1,178 +1,18 @@
 <div class="container py-4">
-  <!-- Header -->
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
     <div class="d-flex align-items-baseline gap-3">
       <h1 class="h3 mb-0">Lista zadań</h1>
       <span class="text-muted small">Zarządzaj zadaniami, sprawdzaj status i szczegóły.</span>
     </div>
-
-    <button type="button" class="btn btn-primary d-flex align-items-center gap-2" (click)="openModal()">
-      <i class="bi bi-plus-lg" aria-hidden="true"></i>
-      <span>Dodaj zadanie</span>
-    </button>
+    <button class="btn btn-primary" (click)="openModal()">Dodaj zadanie</button>
   </div>
 
-  <!-- Filters -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold small">Nazwa zdarzenia</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Szukaj po nazwie..."
-            [(ngModel)]="filters.name"
-            (input)="applyFilters()"
-          />
-        </div>
+  <app-task-filters (filtersChanged)="applyFilters($event)"></app-task-filters>
 
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold small">Data</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="dd.mm.rrrr"
-            inputmode="numeric"
-            pattern="\d{1,2}\.\d{1,2}\.\d{4}"
-            [value]="getFilterDateDisplay()"
-            (input)="onFilterDateInput($event)"
-          />
-        </div>
+  <app-task-list [tasks]="filteredTasks" (toggleCompleted)="toggleCompleted($event)"></app-task-list>
 
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold small">Status</label>
-          <select class="form-select" [(ngModel)]="filters.status" (change)="applyFilters()">
-            <option value="">Wszystkie</option>
-            <option value="Pending">Oczekujące</option>
-            <option value="Planned">Zaplanowane</option>
-            <option value="Completed">Ukończone</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty state -->
-  @if (!filteredTasks || filteredTasks.length === 0) {
-    <div class="alert alert-info d-flex align-items-center" role="status">
-      <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-      Brak zadań do wyświetlenia. Dodaj pierwsze zadanie, aby rozpocząć!
-    </div>
+  @if (showModal) {
+    <app-task-form-modal (save)="addTask($event)" (cancel)="closeModal()"></app-task-form-modal>
+    <div class="modal-backdrop fade show"></div>
   }
-
-  <!-- Task list -->
-  <ul class="list-group">
-    @for (task of filteredTasks; track $index) {
-      <li class="list-group-item" [ngClass]="{ 'task-completed': task.status === 'Completed' }">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-          <div class="d-flex align-items-start gap-2 flex-grow-1">
-            <input
-              type="checkbox"
-              class="form-check-input mt-1"
-              [checked]="task.status === 'Completed'"
-              (change)="toggleCompleted(task)"
-              [attr.aria-label]="'Oznacz zadanie jako ukończone: ' + task.name"
-            />
-            <div>
-              <div class="fw-semibold task-title">{{ task.name }}</div>
-              <div class="d-flex flex-wrap align-items-center gap-2 text-muted small">
-                <span><i class="bi bi-calendar-event"></i> {{ task.date | date:'dd.MM.yyyy' }}</span>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'bg-success-subtle text-success-emphasis border border-success-subtle': task.status === 'Completed',
-                    'bg-warning-subtle text-warning-emphasis border border-warning-subtle': task.status === 'Pending',
-                    'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle': task.status === 'Planned'
-                  }"
-                >
-                  {{ task.status }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <button
-              class="btn btn-outline-secondary btn-sm"
-              type="button"
-              data-bs-toggle="collapse"
-              [attr.data-bs-target]="'#desc-' + $index"
-              [attr.aria-controls]="'desc-' + $index"
-              aria-expanded="false"
-            >
-              Opis
-            </button>
-          </div>
-        </div>
-
-        <div class="collapse mt-3" [attr.id]="'desc-' + $index">
-          <div class="task-desc">
-            @if (task?.description && task.description.trim().length > 0) {
-              {{ task.description }}
-            } @else {
-              <span class="fst-italic text-body-secondary">Brak opisu dla tego zadania.</span>
-            }
-          </div>
-        </div>
-      </li>
-    }
-  </ul>
 </div>
-
-<!-- Modal -->
-<div class="modal fade show" tabindex="-1" style="display: block;" *ngIf="showModal" aria-modal="true" role="dialog">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow">
-      <div class="modal-header">
-        <h5 class="modal-title">Dodaj nowe zadanie</h5>
-        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
-      </div>
-
-      <form [formGroup]="newTaskForm" (ngSubmit)="saveTask()">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Nazwa zadania *</label>
-            <input type="text" class="form-control" formControlName="name" />
-            @if (newTaskForm.get('name')?.touched && newTaskForm.get('name')?.invalid) {
-              <div class="text-danger small mt-1">Nazwa jest wymagana.</div>
-            }
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Data *</label>
-            <input type="date" class="form-control" formControlName="date" />
-            @if (newTaskForm.get('date')?.touched && newTaskForm.get('date')?.errors?.['required']) {
-              <div class="text-danger small mt-1">Data jest wymagana.</div>
-            } @else if (newTaskForm.get('date')?.errors?.['pastDate']) {
-              <div class="text-danger small mt-1">Data nie może być z przeszłości.</div>
-            }
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select class="form-select" formControlName="status">
-              <option value="Pending">Oczekujące</option>
-              <option value="Planned">Zaplanowane</option>
-              <option value="Completed">Ukończone</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Opis</label>
-            <textarea class="form-control" rows="3" formControlName="description"></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Anuluj</button>
-          <button type="submit" class="btn btn-primary" [disabled]="newTaskForm.invalid">Zapisz</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-@if (showModal) {
-  <div class="modal-backdrop fade show"></div>
-}

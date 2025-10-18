@@ -1,0 +1,48 @@
+<ul class="list-group">
+  @for (task of tasks; track $index) {
+    <li
+      class="list-group-item"
+      [ngClass]="{ 'task-completed': task.status === 'Completed' }"
+    >
+      <div class="task-row">
+        <div class="task-content">
+          <input
+            type="checkbox"
+            [checked]="task.status === 'Completed'"
+            (change)="toggleCompleted.emit(task)"
+          />
+          <div class="task-info">
+            <div class="task-title">{{ task.name }}</div>
+            <div class="task-meta">
+              <span><i class="bi bi-calendar-event"></i> {{ task.date | date:'dd.MM.yyyy' }}</span>
+              <span class="badge"
+                [ngClass]="{
+                  'bg-success-subtle': task.status === 'Completed',
+                  'bg-warning-subtle': task.status === 'Pending',
+                  'bg-secondary-subtle': task.status === 'Planned'
+                }">
+                {{ task.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-secondary btn-sm" type="button"
+          data-bs-toggle="collapse"
+          [attr.data-bs-target]="'#desc-' + $index">
+          Opis
+        </button>
+      </div>
+
+      <div class="collapse mt-3" [attr.id]="'desc-' + $index">
+        <div class="task-desc">
+          @if (task.description?.trim()) {
+            {{ task.description }}
+          } @else {
+            <span class="fst-italic text-body-secondary">Brak opisu</span>
+          }
+        </div>
+      </div>
+    </li>
+  }
+</ul>
